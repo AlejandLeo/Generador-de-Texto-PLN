@@ -4,13 +4,16 @@ import os
 import sys
 
 # Añadir el directorio superior al path para importar el módulo 'model'
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from model.processing import load_ml_artifacts, generate_text_with_model, preprocess_text
+
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(PROJECT_ROOT)
+
+from model.processing import load_ml_artifacts, generate_text_with_model
 
 app = Flask(__name__)
 
 # Referencias globales para el modelo ML y tokenizador
-global_ml_model, global_tokenizer = load_ml_artifacts()
+global_ml_models, global_tokenizer = load_ml_artifacts()
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -28,7 +31,7 @@ def index():
         input_prompt = request.form.get('prompt', '').strip()
         selected_model_name = request.form.get('model_select', available_models[0])
 
-        if input_prompt and selected_model_name::
+        if input_prompt and selected_model_name:
             try:
                 generated_text = generate_text_with_model(
                     selected_model_name, 
