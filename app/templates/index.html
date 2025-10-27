@@ -25,7 +25,17 @@
         {% endif %}
 
         <form method="POST">
-            <label for="prompt">Ingresa el inicio de texto:</label><br>
+            <label for="model_select">Selecciona el Modelo:</label>
+            <select id="model_select" name="model_select" required>
+                {% for model_name in available_models %}
+                    <option value="{{ model_name }}" 
+                            {% if model_name == selected_model_name %}selected{% endif %}>
+                        {{ model_name }}
+                    </option>
+                {% endfor %}
+            </select><br><br>
+
+            <label for="prompt">Ingresa tu prompt o inicio de texto:</label><br>
             <textarea id="prompt" name="prompt" placeholder="Escribe aquí el texto inicial..." required>{{ input_prompt }}</textarea><br>
             <button type="submit">Generar Texto</button>
         </form>

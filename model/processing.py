@@ -1,56 +1,84 @@
-# model/processing.py
 import time
-import json
 import os
+import pickle
+import tensorflow as tf
+from tensorflow import keras
+from keras.models import load_model 
 
-# Simulación de la carga del modelo y tokenizador
-global_model = None
+MODEL_DIR = os.path.join('model', 'trained_model')
+TOKENIZER_PATH = os.path.join('model', 'tokenizer', 'tokeizer.pkl')
+
+global_model = {}
 global_tokenizer = None
 
-def load_ml_artifacts(model_path='model/trained_model/', tokenizer_path='model/tokenizer/'):
-    """Carga el modelo y el tokenizador una única vez."""
+def load_ml_artifacts():
+    """Carga el modelo .keras / .h5 y el tokenizador una única vez."""
     global global_model
     global global_tokenizer
+
+    try:
+        if os.path.exists(TOKENIZER_PATH):
+            with open(TOKENIZER_PATH, 'rb') as tkn:
+                global_tokenizer = ´pickle.load(tkn) 
+                print(f"-> Tokenizador (.pkl) cargado correctamente.")
+        else:
+            print(f"-> Advertencia: Tokenizador no encontrado en {TOKENIZER_PATH}. Usando dummy.")
+            # Asignar un objeto simple si no se encuentra (para evitar errores, pero la inferencia fallará)
+            global_tokenizer = None
+    except Exception as e:
+        print(f"Error al cargar tokenizador: {e}")
+
+    for filename in os.listdir(MODEL_DIR):
+        # Filtrar solo archivos de Keras/TensorFlow
+        if filename.endswith(('.keras', '.h5')):
+            model_path = os.path.join(MODEL_DIR, filename)
+            try:
+                model = load_model(model_path) 
+                global_models[filename] = model
+                print(f"-> Modelo '{filename}' cargado correctamente.")
+            except Exception as e:
+                print(f"Error al cargar '{filename}': {e}")
+
+    return global_models, global_tokenizer
+
+def preprocess_text(text: str, tokenizer: dict) -> tf.Tensor:
+    """Convierte texto de entrada a secuencias numéricas usando el objeto Tokenizer."""
+    if not tokenizer:
+        raise ValueError("El objeto Tokenizer no está cargado.")
+
+    # El método principal para tokenizar una lista de textos
+    sequence = tokenizer.texts_to_sequences([text]) 
     
-    # Simulación de carga del modelo (pesos)
-    if os.path.exists(os.path.join(model_path, 'model_weights.h5')):
-        print("-> Modelo ML cargado (simulado).")
-        global_model = {"status": "ready"}
-    else:
-        print("-> Advertencia: Pesos del modelo no encontrados.")
-        global_model = {"status": "dummy"}
+    # IMPORTANTE: Aquí deberías añadir el padding y el truncamiento que usaste en el entrenamiento.
+    # Por ejemplo: sequence = pad_sequences(sequence, maxlen=MAX_LEN)
+    
+    return tf.constant(sequence, dtype=tf.int32)
+
+def generate_text_with_model(model_name: str, input_prompt: str, models: dict, tokenizer) -> str:
+    """Genera texto y lo decodifica."""
+    if model_name not in models:
+        return f"Error: Modelo '{model_name}' no encontrado."
+    if not tokenizer:
+        return "Error: Tokenizador no cargado."
+
+    model = models[model_name]
+    
+    processed_input = preprocess_text(input_prompt, tokenizer)
+
+    try:
+        # En una generación real, usarías un bucle para generar token por token.
+        # Aquí, simulamos una secuencia de salida para el ejemplo:
+        # output_sequence = model.predict(processed_input)
         
-    # Simulación de carga del tokenizador (vocabulario)
-    # En un proyecto real: global_tokenizer = AutoTokenizer.from_pretrained(tokenizer_path)
-    if os.path.exists(os.path.join(tokenizer_path, 'vocab.json')):
-        with open(os.path.join(tokenizer_path, 'vocab.json'), 'r') as f:
-            global_tokenizer = json.load(f)
-            print(f"-> Tokenizador cargado con {len(global_tokenizer)} tokens (simulado).")
-    else:
-        print("-> Advertencia: Vocabulario del tokenizador no encontrado.")
-        global_tokenizer = {"<START>": 0, "token": 1} # Contenido dummy
+        # Simulación: (ej. secuencia generada por el modelo)
+        # Nota: Los índices deben existir en el vocabulario del tokenizador.
+        simulated_output_sequence = [[1, 5, 20, 15, 2]] 
+        
+    except Exception as e:
+        return f"Error de inferencia en {model_name}: {e}"
+
+    # 3. Post-procesamiento (Decodificación de la secuencia)
+    # El método de Keras para decodificar una lista de secuencias
+    generated_text = tokenizer.sequences_to_texts(simulated_output_sequence)[0]
     
-    return global_model, global_tokenizer
-
-def preprocess_text(text: str) -> list:
-    """Convierte el texto de entrada a un formato que el modelo entiende."""
-    # Simulación de tokenización
-    tokens = text.lower().split()
-    return tokens
-
-def postprocess_text(tokens: list) -> str:
-    """Convierte la salida del modelo a texto legible."""
-    # Simulación de decodificación
-    return " ".join(tokens).replace(" .", ".")
-
-def generate_text_with_model(processed_input: list) -> str:
-    """Simula la generación de texto usando el modelo cargado."""
-    print(f"-> Generando texto para input procesado: {processed_input}")
-    
-    time.sleep(1) # Simula el tiempo de ejecución del modelo
-
-    # Lógica de generación simulada (añade contenido)
-    generated_tokens = processed_input + ["y", "el", "modelo", "generó", "este", "texto", "coherente", "."]
-    
-    final_text = postprocess_text(generated_tokens)
-    return final_text
+    return generated_text

@@ -1,15 +1,13 @@
-# Entorno virtual
 venv
 env
 
-# Archivos de Python
 *.pyc
 __pycache__
 my_env
 
-# Archivos del Modelo Grande (evitar subir pesos pesados)
 model/trained_model/*.pt
 model/trained_model/*.h5
+model/trained_model/*.keras
 model/trained_model/*.bin
 
 # Logs
