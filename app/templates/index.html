@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Texto ML</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f7f6; }
+        .container { max-width: 800px; margin: auto; background-color: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); }
+        h1 { color: #1a73e8; text-align: center; }
+        textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; min-height: 100px; }
+        button { padding: 10px 15px; background-color: #1a73e8; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .result-box { margin-top: 20px; padding: 15px; background-color: #e8f0fe; border-left: 4px solid #1a73e8; border-radius: 4px; }
+        .error-box { background-color: #fce8e6; border-left: 4px solid #d93025; color: #d93025; padding: 15px; border-radius: 4px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Generador de Texto con ML</h1>
+        
+        {% if error %}
+        <div class="error-box">
+            <strong>Error:</strong> {{ error }}
+        </div>
+        {% endif %}
+
+        <form method="POST">
+            <label for="prompt">Ingresa el inicio de texto:</label><br>
+            <textarea id="prompt" name="prompt" placeholder="Escribe aquí el texto inicial..." required>{{ input_prompt }}</textarea><br>
+            <button type="submit">Generar Texto</button>
+        </form>
+
+        {% if generated_text %}
+        <div class="result-box">
+            <h2>Resultado de la Generación:</h2>
+            <p>{{ generated_text }}</p>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>
